@@ -1,0 +1,7 @@
+https://ine.es/tnombres/mapaWidget?nombre=antonio&sexo=1
+https://ine.es/tnombres/mapaWidget?nombre=manuel&sexo=1
+https://ine.es/tnombres/mapaWidget?nombre=jose&sexo=1
+https://ine.es/tnombres/mapaWidget?nombre=francisco&sexo=1
+https://ine.es/tnombres/mapaWidget?nombre=david&sexo=1
+https://ine.es/tnombres/mapaWidget?nombre=juan&sexo=1
+https://ine.es/tnombres/mapaWidget?nombre=javier&sexo=1
