@@ -1,0 +1,104 @@
+// Función para mostrar tendencias de nombres en una página estática basada en la URL
+function mostrar_tendencia_pagina_estatica() {
+    global $wpdb;
+    $tabla_tendencias = 'nombre_tendencias'; // Ajuste del nombre de la tabla
+    $resultado = '';
+
+    // Recuperar la palabra clave desde la URL
+    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH); // Obtiene solo el path de la URL
+    $segmentos = explode('/', trim($path, '/')); // Divide la ruta en segmentos
+    $nombre = urldecode(end($segmentos)); // Toma el último segmento y decodifica caracteres especiales
+    $nombre = str_replace('-', ' ', $nombre); // Reemplaza guiones medios por espacios
+    $nombre = sanitize_text_field($nombre); // Sanitiza el nombre
+
+    // Capitaliza el nombre
+    $nombre_capitalizado = ucwords(strtolower($nombre)); // Convierte la primera letra de cada palabra a mayúscula
+
+    // Verifica si se obtuvo un nombre válido
+    if (!empty($nombre) && ctype_alpha(str_replace(' ', '', $nombre))) { // Permite letras y espacios
+        // Consulta a la tabla `nombre_tendencias`
+        $datos_tendencia = $wpdb->get_results($wpdb->prepare(
+            "SELECT volumen, decadas, sexo FROM $tabla_tendencias WHERE nombres = %s",
+            strtoupper($nombre) // Mantiene el nombre en mayúsculas para la consulta
+        ));
+
+        if ($datos_tendencia) {
+            $resultado = "<div class='resultado-busqueda'>
+                <div class='cabecera'>
+                    <h2>Tendencias para el nombre <strong>" . esc_html($nombre_capitalizado) . "</strong></h2>
+                </div>
+                <div class='caja'>";
+
+            foreach ($datos_tendencia as $fila) {
+                $decadas = explode(',', $fila->decadas);
+                $volumen = explode(',', $fila->volumen);
+                $sexo = esc_html($fila->sexo);
+                $color_clase = strtolower($sexo) === 'hombres' ? 'pastilla-azul' : 'pastilla-lila';
+                $id_canvas = 'grafico_' . strtolower($sexo) . '_' . rand(1000, 9999);
+
+                // Crear contenedor para el gráfico con estilo
+                $resultado .= "<div class='contenido $color_clase'>
+                    <h3 class='titulo'><strong>" . ($sexo === 'Hombres' ? 'Hombres' : 'Mujeres') . "</strong></h3>
+                    <canvas id='$id_canvas'></canvas>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const ctx = document.getElementById('$id_canvas').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: " . json_encode($decadas) . ",
+                                datasets: [{
+                                    label: 'Volumen',
+                                    data: " . json_encode($volumen) . ",
+                                    borderColor: '#004aad',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderWidth: 3,
+                                    tension: 0.4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return context.raw + ' personas';
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Décadas'
+                                        }
+                                    },
+                                    y: {
+                                        title: {
+                                            display: true,
+                                            text: 'Volumen'
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
+                </script>";
+            }
+
+            $resultado .= "</div></div>";
+        } else {
+            $resultado = "<p>No se encontraron datos de tendencia para el nombre <strong>" . esc_html($nombre_capitalizado) . "</strong>.</p>";
+        }
+    } else {
+        $resultado = "<p>El formato del nombre en la URL no es válido. Asegúrate de que la URL contenga un nombre al final.</p>";
+    }
+
+    return $resultado;
+}
+add_shortcode('tendencia_pagina_estatica', 'mostrar_tendencia_pagina_estatica');

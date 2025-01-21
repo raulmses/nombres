@@ -2,8 +2,8 @@ import requests
 import csv
 
 # Nombre del archivo con las URLs y nombre del archivo de salida
-input_file = './URLs/urls-prueba.txt'
-output_file = 'Outputs/output-mapa.csv'
+input_file = r'C:\Users\raulmses\Desktop\Proyecto nombre\nombres\URLs\mapa-urls.txt'
+output_file = r'C:\Users\raulmses\Desktop\Proyecto nombre\nombres\Outputs\output-mapa.csv'
 
 # Función para extraer la información
 def fetch_data_from_urls(file_path):
